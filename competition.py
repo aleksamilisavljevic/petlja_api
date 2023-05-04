@@ -1,5 +1,6 @@
 from urls import PETLJA_URL
 from auth import get_csrf_token
+from problem import get_problem_name
 from datetime import datetime
 
 
@@ -32,3 +33,17 @@ def create_competition(
     header_loc = resp.headers["Location"]  # /cpanel/CompetitionSettings/:comp_id
     comp_id = header_loc.split("/")[-1]
     return comp_id
+
+
+def add_problem(session, competition_id, problem_id, scoring=None):
+    url = f"{PETLJA_URL}/api/dashboard/competitions/problems/add"
+    problem_name = get_problem_name(session, problem_id)
+    resp = session.post(
+        url,
+        json={
+            "competitionId": competition_id,
+            "problemId": problem_id,
+            "name": problem_name,
+            # "sortOrder": 0, # Seems to be optional
+        },
+    )
