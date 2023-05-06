@@ -20,6 +20,9 @@ def get_problem_name(session, problem_id):
 
 
 def create_problem(session, name, alias):
+    if not alias.isalnum() or not alias.islower():
+        raise ValueError("Alias must be alphanumeric and lowercase")
+
     create_problem_page = session.get(f"{PETLJA_URL}/cpanel/CreateTask")
     csrf_token = get_csrf_token(create_problem_page.text)
     resp = session.post(
@@ -43,6 +46,22 @@ def upload_testcases(session, problem_id, testcases_path):
             files={"TestCases": zip},
             data={
                 "PostAction": "EditTestCases",
+                "__RequestVerificationToken": csrf_token,
+            },
+            allow_redirects=False,
+        )
+
+
+def upload_statement(session, problem_id, statement_path):
+    page = session.get(f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}?tab=statement")
+    csrf_token = get_csrf_token(page.text)
+    with open(statement_path, encoding="utf-8") as statement:
+        resp = session.post(
+            f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}",
+            data={
+                "Problem.ProblemStatementMD": statement.read(),
+                "PostAction": "EditStatement",
+                "Problem.MDSupported": "true",
                 "__RequestVerificationToken": csrf_token,
             },
             allow_redirects=False,
