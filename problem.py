@@ -27,7 +27,9 @@ def get_problem_name(session, problem_id):
 
 def create_problem(session, name, alias):
     if not alias or not alias.isalnum() or not alias.islower():
-        raise ValueError("Alias must be alphanumeric and lowercase")
+        raise NameError(
+            f"Invalid problem alias {alias}: must be alphanumeric and lowercase"
+        )
 
     create_problem_page = session.get(f"{PETLJA_URL}/cpanel/CreateTask")
     csrf_token = get_csrf_token(create_problem_page.text)
@@ -89,3 +91,4 @@ def upload_statement(session, problem_id, statement_path):
             },
             allow_redirects=False,
         )
+    # TODO: check for errors

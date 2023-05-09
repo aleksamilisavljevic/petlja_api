@@ -1,8 +1,26 @@
-from urls import PETLJA_URL
+from urls import PETLJA_URL, ARENA_URL
 from auth import get_csrf_token
 from problem import get_problem_name
 from datetime import datetime
 import re
+from bs4 import BeautifulSoup
+
+
+def get_competition_id(session, alias):
+    page = session.get(f"{ARENA_URL}/competition/{alias}")
+    if page.status_code == 404:
+        raise ValueError(f"Competition with alias {alias} does not exist")
+
+    soup = BeautifulSoup(page.text, "html.parser")
+    competition_id = soup.find("button", attrs={"id": "ciRun"})["data-competition-id"]
+    return competition_id
+
+
+def get_added_problem_ids(session, competition_id):
+    page = session.get(f"{PETLJA_URL}/cpanel/CompetitionTasks/{competition_id}")
+    soup = BeautifulSoup(page.text, "html.parser")
+    options = soup.find("select", {"id": "selectTask"}).find_all("option")
+    return [o["value"] for o in options]
 
 
 def create_competition(
@@ -19,8 +37,8 @@ def create_competition(
 
     regex = re.compile(r"^[a-z0-9-]+$")
     if not regex.match(alias):
-        raise ValueError(
-            "Alias must contain only lowercase alphanumeric characters and dashes"
+        raise NameError(
+            f"Invalid alias {alias}: must contain only lowercase alphanumeric characters and dashes"
         )
 
     url = f"{PETLJA_URL}/cpanel/CreateCompetition"
@@ -51,6 +69,10 @@ def create_competition(
 
 
 def add_problem(session, competition_id, problem_id, scoring=None):
+    already_added = get_added_problem_ids(session, competition_id)
+    if problem_id in already_added:
+        return
+
     url = f"{PETLJA_URL}/api/dashboard/competitions/problems/add"
     problem_name = get_problem_name(session, problem_id)
     resp = session.post(
@@ -62,3 +84,5 @@ def add_problem(session, competition_id, problem_id, scoring=None):
             # "sortOrder": 0, # Seems to be optional
         },
     )
+
+    # TODO: Check for errors
