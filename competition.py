@@ -3,6 +3,7 @@ from auth import get_csrf_token
 from problem import get_problem_name
 from datetime import datetime
 import re
+import json
 from bs4 import BeautifulSoup
 
 
@@ -19,8 +20,14 @@ def get_competition_id(session, alias):
 def get_added_problem_ids(session, competition_id):
     page = session.get(f"{PETLJA_URL}/cpanel/CompetitionTasks/{competition_id}")
     soup = BeautifulSoup(page.text, "html.parser")
-    options = soup.find("select", {"id": "selectTask"}).find_all("option")
-    return [o["value"] for o in options]
+    # Get object viewModel from inline script in html which contains data about added problems
+    # FIXME regex hack, should be replaced with a proper parser
+    regex = re.compile(r"var viewModel=({.*?});\n")
+    match = regex.search(soup.prettify()).group(1)
+    # Can be parsed as json since it is a javascript object
+    data = json.loads(match)
+    problem_ids = [str(problem["problemId"]) for problem in data["problems"]]
+    return problem_ids
 
 
 def create_competition(
