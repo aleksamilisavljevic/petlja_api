@@ -28,14 +28,18 @@ def submit(session, competition_id, problem_id, source_path):
         },
     )
     submission_id = submit.json()["value"]
-    time.sleep(2)  # FIXME wait until evaluation is finished
-    submission_data = session.post(
-        f"{ARENA_URL}/api/competition/submissions",
-        json={
-            "competitionId": competition_id,
-            "idStamp": submission_id,
-            "loadNew": "true",
-        },
-    )
-    score = submission_data.json()["value"]["item1"][0]["score"]
+    # Polling the server every x seconds
+    # Better solution may exist
+    score = "-"
+    while score == "-":
+        time.sleep(1)
+        submission_data = session.post(
+            f"{ARENA_URL}/api/competition/submissions",
+            json={
+                "competitionId": competition_id,
+                "idStamp": submission_id,
+                "loadNew": "true",
+            },
+        )
+        score = submission_data.json()["value"]["item1"][0]["score"]
     return score
