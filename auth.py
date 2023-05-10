@@ -1,6 +1,8 @@
+from getpass import getpass
+
 import requests
 from bs4 import BeautifulSoup
-from getpass import getpass
+
 from urls import ARENA_URL
 
 
@@ -20,10 +22,10 @@ def get_session(username=None, password=None):
     if username is None or password is None:
         username, password = get_credentials()
 
-    s = requests.Session()
-    mainpage = s.get(ARENA_URL)
+    session = requests.Session()
+    mainpage = session.get(ARENA_URL)
     csrf_token = get_csrf_token(mainpage.text)
-    login = s.post(
+    login = session.post(
         f"{ARENA_URL}/sr-Latn-RS/Account/Login",
         data={
             "LoginViewModel.UserNameOrEmail": username,
@@ -35,10 +37,12 @@ def get_session(username=None, password=None):
     )
 
     if login.status_code == 302:
-        jwt = s.cookies["PetljaCookie"]
-        s.headers.update({"Authorization": f"Bearer {jwt}"})
-        return s
+        jwt = session.cookies["PetljaCookie"]
+        session.headers.update({"Authorization": f"Bearer {jwt}"})
+        return session
     elif login.status_code == 200:
         raise PermissionError("Wrong username or password")
     else:
-        raise Exception
+        raise RuntimeError(
+            f"Unknown error: login failed with status code {login.status_code}"
+        )

@@ -18,7 +18,7 @@ def submit(session, competition_id, problem_id, source_path):
         source = source_file.read()
 
     extension = source_path.split(".")[-1]
-    submit = session.post(
+    submit_res = session.post(
         f"{ARENA_URL}/api/competition/submit-competition-problem",
         json={
             "competitionId": competition_id,
@@ -27,7 +27,7 @@ def submit(session, competition_id, problem_id, source_path):
             "languageId": LANGUAGE_IDS[extension],
         },
     )
-    submission_id = submit.json()["value"]
+    submission_id = submit_res.json()["value"]
     # Polling the server every x seconds
     # Better solution may exist
     score = "-"

@@ -1,10 +1,12 @@
-from urls import PETLJA_URL, ARENA_URL
+import json
+import re
+from datetime import datetime
+
+from bs4 import BeautifulSoup
+
 from auth import get_csrf_token
 from problem import get_problem_name
-from datetime import datetime
-import re
-import json
-from bs4 import BeautifulSoup
+from urls import ARENA_URL, PETLJA_URL
 
 
 def get_competition_id(session, alias):
@@ -72,7 +74,7 @@ def create_competition(
     elif resp.status_code == 200:
         raise ValueError("Competition alias already exists")
     else:
-        raise Exception(f"Unknown error, status code {resp.status_code}")
+        raise RuntimeError(f"Unknown error: {resp.status_code}")
 
 
 def add_problem(session, competition_id, problem_id, scoring=None):

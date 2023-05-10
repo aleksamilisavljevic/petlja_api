@@ -1,6 +1,7 @@
+from bs4 import BeautifulSoup
+
 from auth import get_csrf_token
 from urls import PETLJA_URL
-from bs4 import BeautifulSoup
 
 
 def get_problem_id(session, alias):
@@ -47,7 +48,9 @@ def create_problem(session, name, alias):
     elif resp.status_code == 200:
         raise ValueError("Problem alias already exists")
     else:
-        raise Exception("Unknown error")
+        raise RuntimeError(
+            "Unknown error while creating problem (status code {resp.status_code})"
+        )
 
 
 def check_testcase_upload(page):
@@ -63,10 +66,10 @@ def check_testcase_upload(page):
 def upload_testcases(session, problem_id, testcases_path):
     page = session.get(f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}?tab=testcases")
     csrf_token = get_csrf_token(page.text)
-    with open(testcases_path, "rb") as zip:
+    with open(testcases_path, "rb") as zipfile:
         resp = session.post(
             f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}",
-            files={"TestCases": zip},
+            files={"TestCases": zipfile},
             data={
                 "PostAction": "EditTestCases",
                 "__RequestVerificationToken": csrf_token,
