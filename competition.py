@@ -95,3 +95,22 @@ def add_problem(session, competition_id, problem_id, scoring=None):
     )
 
     # TODO: Check for errors
+
+
+def upload_scoring(session, competition_id, problem_id, scoring_path):
+    url = f"{PETLJA_URL}/api/dashboard/competitions/problems/addGraderHints"
+    with open(scoring_path) as scoring_file:
+        scoring = scoring_file.read()
+    resp = session.post(
+        url,
+        json={
+            "competitionId": competition_id,
+            "problemId": problem_id,
+            "hintsYML": scoring,
+            "testCaseCount": 100,  # FIXME Count number of testcases from scoring file
+        },
+    )
+
+    errors = resp.json()["errors"]
+    if errors:
+        raise ValueError(f"Error uploading scoring, petlja response: {errors[0]}")
