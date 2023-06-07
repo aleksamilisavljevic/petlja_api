@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from .auth import get_csrf_token
 from .problem import get_problem_name
 from .urls import ARENA_URL, PETLJA_URL
+from .submit import LANGUAGE_IDS
 
 
 def get_competition_id(session, alias):
@@ -114,3 +115,14 @@ def upload_scoring(session, competition_id, problem_id, scoring_path):
     errors = resp.json()["errors"]
     if errors:
         raise ValueError(f"Error uploading scoring, petlja response: {errors[0]}")
+
+def add_language(session, competition_id, extension):
+    url = f'{PETLJA_URL}/api/dashboard/competitions/programmingLanguages/add'
+    res = session.post(
+        url,
+        json={
+            "competitionId": competition_id,
+            "languageId": LANGUAGE_IDS[extension]
+        }
+    )
+    # TODO Check for errors
