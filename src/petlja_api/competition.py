@@ -12,7 +12,10 @@ from .submit import LANGUAGE_IDS
 
 def get_competition_id(session, alias):
     page = session.get(f"{ARENA_URL}/competition/{alias}")
-    if page.status_code == 404:
+    if (
+        page.status_code == 404
+        or 'error' in page.url
+    ):
         raise ValueError(f"Competition with alias {alias} does not exist")
 
     soup = BeautifulSoup(page.text, "html.parser")

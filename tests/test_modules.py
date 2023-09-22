@@ -176,6 +176,13 @@ def test_upload_scoring(sess, comp_with_problems, scoring):
     pid = petlja.get_added_problem_ids(sess, cid)[0]
     petlja.upload_scoring(sess, cid, pid, scoring)
 
+def test_get_competition_id(sess, empty_comp):
+    cid, alias = empty_comp
+    assert petlja.get_competition_id(sess, alias) == cid
+
+def test_get_competition_id_nonexistent(sess):
+    with pytest.raises(ValueError):
+        petlja.get_competition_id(sess, 'qurvoqireouqh')
 
 # Testing TLE is slow
 
