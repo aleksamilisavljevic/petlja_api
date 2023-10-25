@@ -12,6 +12,8 @@ LANGUAGE_IDS = {
     ".py": 9,
 }
 
+TIMEOUT = 30
+
 
 def submit_solution(session, competition_id, problem_id, source_path):
     with open(source_path) as source_file:
@@ -27,12 +29,15 @@ def submit_solution(session, competition_id, problem_id, source_path):
             "languageId": LANGUAGE_IDS[extension],
         },
     )
+    success = submit_res.json()["succeeded"]
+    if not success:
+        error = submit_res.json()["errors"][0]["description"]
+        raise Exception(error)
     submission_id = submit_res.json()["value"]
     # Polling the server every x seconds
     # Better solution may exist
-    score = "-"
-    while score == "-":
-        time.sleep(1)
+    tries = 0
+    while tries < TIMEOUT:
         submission_data = session.post(
             f"{ARENA_URL}/api/competition/submissions",
             json={
@@ -42,4 +47,8 @@ def submit_solution(session, competition_id, problem_id, source_path):
             },
         )
         score = submission_data.json()["value"]["item1"][0]["score"]
-    return score
+        if score != '-':
+            return score
+        time.sleep(1)
+
+    raise TimeoutError

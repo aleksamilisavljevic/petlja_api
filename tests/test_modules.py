@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 @pytest.fixture
 def sess():
     return petlja.login(os.environ['PETLJA_USER'], os.environ['PETLJA_PASS'])
@@ -20,12 +21,14 @@ def created_prob(sess):
     pid = petlja.create_problem(sess, "Test zadatak", alias)
     return pid, alias
 
+
 @pytest.fixture
 def empty_comp(sess):
     uid = random.randint(1000, 9999)
     alias = f"testcomp{uid}"
     cid = petlja.create_competition(sess, "Test takmicenje", alias)
     return cid, alias
+
 
 @pytest.fixture
 def comp_with_problems(sess, empty_comp, created_prob, scoring, testcases):
@@ -35,6 +38,7 @@ def comp_with_problems(sess, empty_comp, created_prob, scoring, testcases):
     petlja.upload_testcases(sess, pid, testcases)
     petlja.upload_scoring(sess, cid, pid, scoring)
     return cid, alias
+
 
 @pytest.fixture
 def src_ok(tmp_path):
@@ -52,6 +56,7 @@ def src_ok(tmp_path):
     path.write_text(src)
     return path
 
+
 @pytest.fixture
 def src_wa(tmp_path):
     src = """
@@ -66,6 +71,19 @@ def src_wa(tmp_path):
     path = tmp_path / "trening_wa.cpp"
     path.write_text(src)
     return path
+
+
+@pytest.fixture
+def src_py(tmp_path):
+    src = """
+    a = int(input())
+    b = int(input())
+    print(2 * (a + b))
+    """
+    path = tmp_path / "trening.py"
+    path.write_text(src)
+    return path
+
 
 @pytest.fixture
 def statement(tmp_path):
@@ -104,9 +122,11 @@ def statement(tmp_path):
     path.write_text(st)
     return path
 
+
 @pytest.fixture
 def testcases():
     return "tests/data/testcases.zip"
+
 
 @pytest.fixture
 def scoring(tmp_path):
@@ -153,18 +173,22 @@ def test_submit_wa(sess, comp_with_problems, src_wa):
     score = petlja.submit_solution(sess, cid, pid, src_wa)
     assert score == "0"
 
+
 def test_create_problem(created_prob):
     _, alias = created_prob
     res = requests.get(f"https://petlja.org/problems/{alias}")
     assert res.status_code == 200
 
+
 def test_create_already_existing_prob(sess):
     with pytest.raises(ValueError):
         petlja.create_problem(sess, "Postojeci problem", "osdrz23odbijanje")
 
+
 def test_upload_testcases(sess, created_prob, testcases):
     id, _ = created_prob
     petlja.upload_testcases(sess, id, testcases)
+
 
 def test_upload_statement(sess, created_prob, statement):
     id, _ = created_prob
@@ -176,13 +200,23 @@ def test_upload_scoring(sess, comp_with_problems, scoring):
     pid = petlja.get_added_problem_ids(sess, cid)[0]
     petlja.upload_scoring(sess, cid, pid, scoring)
 
+
 def test_get_competition_id(sess, empty_comp):
     cid, alias = empty_comp
     assert petlja.get_competition_id(sess, alias) == cid
 
+
 def test_get_competition_id_nonexistent(sess):
     with pytest.raises(ValueError):
         petlja.get_competition_id(sess, 'qurvoqireouqh')
+
+
+def test_submit_unallowed_lang(sess, comp_with_problems, created_prob, src_py):
+    cid, _ = comp_with_problems
+    pid, _ = created_prob
+    with pytest.raises(Exception):
+        petlja.submit_solution(sess, cid, pid, src_py)
+
 
 # Testing TLE is slow
 
