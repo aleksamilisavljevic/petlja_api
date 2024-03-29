@@ -43,7 +43,7 @@ def submit_solution(session, competition_id, problem_id, source_path):
             json={
                 "competitionId": competition_id,
                 "idStamp": submission_id,
-                "loadNew": "true",
+                "loadNew": True,
             },
         )
         score = submission_data.json()["value"]["item1"][0]["score"]
