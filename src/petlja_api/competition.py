@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from .auth import get_csrf_token
 from .problem import get_problem_name
-from .urls import ARENA_URL, PETLJA_URL
+from .urls import ARENA_URL, CPANEL_URL, PETLJA_URL
 from .submit import LANGUAGE_IDS
 
 
@@ -24,7 +24,7 @@ def get_competition_id(session, alias):
 
 
 def get_added_problem_ids(session, competition_id):
-    page = session.get(f"{PETLJA_URL}/cpanel/CompetitionTasks/{competition_id}")
+    page = session.get(f"{CPANEL_URL}/CompetitionTasks/{competition_id}")
     soup = BeautifulSoup(page.text, "html.parser")
     # Get object viewModel from inline script in html which contains data about added problems
     # FIXME regex hack, should be replaced with a proper parser
@@ -54,7 +54,7 @@ def create_competition(
             f"Invalid alias {alias}: must contain only lowercase alphanumeric characters and dashes"
         )
 
-    url = f"{PETLJA_URL}/cpanel/CreateCompetition"
+    url = f"{CPANEL_URL}/CreateCompetition"
     page = session.get(url)
     csrf_token = get_csrf_token(page.text)
     resp = session.post(

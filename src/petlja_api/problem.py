@@ -1,11 +1,11 @@
 from bs4 import BeautifulSoup
 
 from .auth import get_csrf_token
-from .urls import PETLJA_URL
+from .urls import CPANEL_URL, PROBLEMS_URL
 
 
 def get_problem_id(session, alias):
-    page = session.get(f"{PETLJA_URL}/problems/{alias}")
+    page = session.get(f"{PROBLEMS_URL}/{alias}")
     if page.status_code == 404:
         raise ValueError(f"Problem with alias {alias} does not exist")
 
@@ -17,7 +17,7 @@ def get_problem_id(session, alias):
 
 
 def get_problem_name(session, problem_id):
-    page = session.get(f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}")
+    page = session.get(f"{CPANEL_URL}/EditProblem/{problem_id}")
     if page.status_code == 404:
         raise ValueError(f"Problem with id {problem_id} does not exist")
 
@@ -32,10 +32,10 @@ def create_problem(session, name, alias):
             f"Invalid problem alias {alias}: must be alphanumeric and lowercase"
         )
 
-    create_problem_page = session.get(f"{PETLJA_URL}/cpanel/CreateTask")
+    create_problem_page = session.get(f"{CPANEL_URL}/CreateTask")
     csrf_token = get_csrf_token(create_problem_page.text)
     resp = session.post(
-        f"{PETLJA_URL}/cpanel/CreateTask",
+        f"{CPANEL_URL}/CreateTask",
         data={
             "Name": name,
             "UniqueId": alias,
@@ -65,11 +65,11 @@ def check_testcase_upload(page):
 
 
 def upload_testcases(session, problem_id, testcases_path):
-    page = session.get(f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}?tab=testcases")
+    page = session.get(f"{CPANEL_URL}/EditProblem/{problem_id}?tab=testcases")
     csrf_token = get_csrf_token(page.text)
     with open(testcases_path, "rb") as zipfile:
         resp = session.post(
-            f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}",
+            f"{CPANEL_URL}/EditProblem/{problem_id}",
             files={"TestCases": zipfile},
             data={
                 "PostAction": "EditTestCases",
@@ -82,11 +82,11 @@ def upload_testcases(session, problem_id, testcases_path):
 
 
 def upload_statement(session, problem_id, statement_path):
-    page = session.get(f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}?tab=statement")
+    page = session.get(f"{CPANEL_URL}/EditProblem/{problem_id}?tab=statement")
     csrf_token = get_csrf_token(page.text)
     with open(statement_path, encoding="utf-8") as statement:
         resp = session.post(
-            f"{PETLJA_URL}/cpanel/EditProblem/{problem_id}",
+            f"{CPANEL_URL}/EditProblem/{problem_id}",
             data={
                 "Problem.ProblemStatementMD": statement.read(),
                 "PostAction": "EditStatement",
