@@ -1,5 +1,6 @@
 import os
 import random
+import uuid
 
 import pytest
 import requests
@@ -16,7 +17,7 @@ def sess():
 
 @pytest.fixture
 def created_prob(sess):
-    uid = random.randint(1000, 9999)
+    uid = uuid.uuid4().hex
     alias = f"testprob{uid}"
     pid = petlja.create_problem(sess, "Test zadatak", alias)
     return pid, alias
@@ -24,7 +25,7 @@ def created_prob(sess):
 
 @pytest.fixture
 def empty_comp(sess):
-    uid = random.randint(1000, 9999)
+    uid = uuid.uuid4().hex
     alias = f"testcomp{uid}"
     cid = petlja.create_competition(sess, "Test takmicenje", alias)
     return cid, alias
@@ -42,7 +43,7 @@ def comp_with_problems(sess, empty_comp, created_prob, scoring, testcases):
 
 @pytest.fixture
 def src_ok(tmp_path):
-    src = """
+    src = r"""
     #include <iostream>
     using namespace std;
 
@@ -59,7 +60,7 @@ def src_ok(tmp_path):
 
 @pytest.fixture
 def src_wa(tmp_path):
-    src = """
+    src = r"""
     #include <iostream>
     using namespace std;
 
@@ -75,7 +76,7 @@ def src_wa(tmp_path):
 
 @pytest.fixture
 def src_py(tmp_path):
-    src = """
+    src = r"""
     a = int(input())
     b = int(input())
     print(2 * (a + b))
@@ -87,7 +88,7 @@ def src_py(tmp_path):
 
 @pytest.fixture
 def statement(tmp_path):
-    st = """
+    st = r"""
     За низ ћемо рећи да је **уравнотежен** ако је збир његових елемената једнак његовој дужини (броју елемената).
 
     Дат је низ $a$ дужине $n$, чији су елементи једноцифрени бројеви. Одредити колико он садржи уравнотежених сегмената (поднизова са узастопним елементима).
@@ -130,7 +131,7 @@ def testcases():
 
 @pytest.fixture
 def scoring(tmp_path):
-    yaml = """
+    yaml = r"""
     type: testcase
     score_total: 100
     score_overrides:

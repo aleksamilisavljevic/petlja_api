@@ -16,5 +16,11 @@ dependencies = [
     "requests==2.31.0"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "python-dotenv"
+]
+
 [project.urls]
 "Homepage" = "https://github.com/PavleSekesan/petlja_api"
