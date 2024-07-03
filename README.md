@@ -4,7 +4,7 @@ A python library for interacting with the [petlja.org](https://petlja.org/) API.
 
 ## Installation
 ```
-pip install git+https://github.com/PavleSekesan/petlja_api.git
+pip install petlja-api
 ```
 
 ## Basic usage
