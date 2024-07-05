@@ -47,7 +47,7 @@ def submit_solution(session, competition_id, problem_id, source_path):
             },
         )
         score = submission_data.json()["value"]["item1"][0]["score"]
-        if score != '-':
+        if score != "-":
             return score
         time.sleep(1)
 

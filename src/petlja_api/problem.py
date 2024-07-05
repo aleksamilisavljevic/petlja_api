@@ -42,7 +42,7 @@ def create_problem(session, name, alias):
             "Type": "0",
             "__RequestVerificationToken": csrf_token,
         },
-        allow_redirects=False
+        allow_redirects=False,
     )
     if resp.status_code == 302:
         return get_problem_id(session, alias)
@@ -50,7 +50,7 @@ def create_problem(session, name, alias):
         raise ValueError("Problem alias already exists")
     else:
         raise RuntimeError(
-            "Unknown error while creating problem (status code {resp.status_code})"
+            f"Unknown error while creating problem (status code {resp.status_code})"
         )
 
 
@@ -85,7 +85,7 @@ def upload_statement(session, problem_id, statement_path):
     page = session.get(f"{CPANEL_URL}/EditProblem/{problem_id}?tab=statement")
     csrf_token = get_csrf_token(page.text)
     with open(statement_path, encoding="utf-8") as statement:
-        resp = session.post(
+        session.post(
             f"{CPANEL_URL}/EditProblem/{problem_id}",
             data={
                 "Problem.ProblemStatementMD": statement.read(),

@@ -63,8 +63,10 @@ for problem_path in comp_path.iterdir():
         problem_id = open_prob(problem_name)
 
         subprocess.run(
-            ["petljapub", "tests-zip"], cwd=problem_path,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            ["petljapub", "tests-zip"],
+            cwd=problem_path,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
         testcases_path = problem_path.joinpath("_build/testcases.zip")
         petlja.upload_testcases(session, problem_id, testcases_path)

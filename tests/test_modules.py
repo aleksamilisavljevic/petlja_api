@@ -1,5 +1,4 @@
 import os
-import random
 import uuid
 
 import pytest
@@ -12,7 +11,7 @@ load_dotenv()
 
 @pytest.fixture
 def sess():
-    return petlja.login(os.environ['PETLJA_USER'], os.environ['PETLJA_PASS'])
+    return petlja.login(os.environ["PETLJA_USER"], os.environ["PETLJA_PASS"])
 
 
 @pytest.fixture
@@ -70,6 +69,23 @@ def src_wa(tmp_path):
     }
     """
     path = tmp_path / "trening_wa.cpp"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
+def src_tle(tmp_path):
+    src = r"""
+    #include <iostream>
+    using namespace std;
+
+    int main()
+    {
+        int a, b; cin >> a >> b;
+        while(true) {}
+    }
+    """
+    path = tmp_path / "trening_tle.cpp"
     path.write_text(src)
     return path
 
@@ -175,6 +191,14 @@ def test_submit_wa(sess, comp_with_problems, src_wa):
     assert score == "0"
 
 
+@pytest.mark.slow
+def test_submit_tle(sess, comp_with_problems, src_tle):
+    cid, _ = comp_with_problems
+    pid = petlja.get_added_problem_ids(sess, cid)[0]
+    score = petlja.submit_solution(sess, cid, pid, src_tle)
+    assert score == "0"
+
+
 def test_create_problem(created_prob):
     _, alias = created_prob
     res = requests.get(f"https://petlja.org/problems/{alias}")
@@ -209,7 +233,7 @@ def test_get_competition_id(sess, empty_comp):
 
 def test_get_competition_id_nonexistent(sess):
     with pytest.raises(ValueError):
-        petlja.get_competition_id(sess, 'qurvoqireouqh')
+        petlja.get_competition_id(sess, "qurvoqireouqh")
 
 
 def test_submit_unallowed_lang(sess, comp_with_problems, created_prob, src_py):
@@ -217,21 +241,3 @@ def test_submit_unallowed_lang(sess, comp_with_problems, created_prob, src_py):
     pid, _ = created_prob
     with pytest.raises(Exception):
         petlja.submit_solution(sess, cid, pid, src_py)
-
-
-# Testing TLE is slow
-
-# def test_submit_tle(sess, cid, pid, tmp_path):
-#     src = """
-#     #include <iostream>
-#     using namespace std;
-
-#     int main()
-#     {
-#         int a, b; cin >> a >> b;
-#         while(true) {}
-#     }
-#     """
-#     src_path = tmp_path / "trening_tle.cpp"
-#     score = _submit_src_file(sess, cid, pid, src, src_path)
-#     assert score == "0"

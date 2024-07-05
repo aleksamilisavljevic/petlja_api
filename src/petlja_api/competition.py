@@ -12,10 +12,7 @@ from .submit import LANGUAGE_IDS
 
 def get_competition_id(session, alias):
     page = session.get(f"{ARENA_URL}/competition/{alias}")
-    if (
-        page.status_code == 404
-        or 'error' in page.url
-    ):
+    if page.status_code == 404 or "error" in page.url:
         raise ValueError(f"Competition with alias {alias} does not exist")
 
     soup = BeautifulSoup(page.text, "html.parser")
@@ -26,7 +23,8 @@ def get_competition_id(session, alias):
 def get_added_problem_ids(session, competition_id):
     page = session.get(f"{CPANEL_URL}/CompetitionTasks/{competition_id}")
     soup = BeautifulSoup(page.text, "html.parser")
-    # Get object viewModel from inline script in html which contains data about added problems
+    # Get object viewModel from inline script in html
+    # which contains data about added problems
     # FIXME regex hack, should be replaced with a proper parser
     regex = re.compile(r"var viewModel=({.*?});\n")
     match = regex.search(soup.prettify()).group(1)
@@ -51,7 +49,8 @@ def create_competition(
     regex = re.compile(r"^[a-z0-9-]+$")
     if not regex.match(alias):
         raise NameError(
-            f"Invalid alias {alias}: must contain only lowercase alphanumeric characters and dashes"
+            f"Invalid alias {alias}: must contain only"
+            "lowercase alphanumeric characters and dashes"
         )
 
     url = f"{CPANEL_URL}/CreateCompetition"
@@ -88,7 +87,7 @@ def add_problem(session, competition_id, problem_id):
 
     url = f"{PETLJA_URL}/api/dashboard/competitions/problems/add"
     problem_name = get_problem_name(session, problem_id)
-    resp = session.post(
+    session.post(
         url,
         json={
             "competitionId": competition_id,
@@ -119,13 +118,11 @@ def upload_scoring(session, competition_id, problem_id, scoring_path):
     if errors:
         raise ValueError(f"Error uploading scoring, petlja response: {errors[0]}")
 
+
 def add_language(session, competition_id, extension):
-    url = f'{PETLJA_URL}/api/dashboard/competitions/programmingLanguages/add'
-    res = session.post(
+    url = f"{PETLJA_URL}/api/dashboard/competitions/programmingLanguages/add"
+    session.post(
         url,
-        json={
-            "competitionId": competition_id,
-            "languageId": LANGUAGE_IDS[extension]
-        }
+        json={"competitionId": competition_id, "languageId": LANGUAGE_IDS[extension]},
     )
     # TODO Check for errors
