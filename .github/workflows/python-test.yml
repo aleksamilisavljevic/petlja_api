@@ -41,5 +41,5 @@ jobs:
         echo PETLJA_PASS=${{ secrets.PETLJA_PASS }} >> tests/.env
     - name: Test with pytest
       run: |
-        pytest --runslow
+        pytest --runslow --timeout=300
 
