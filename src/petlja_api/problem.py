@@ -54,6 +54,18 @@ def create_problem(session, name, alias):
         )
 
 
+def delete_problem(session, problem_id):
+    page = session.get(f"{CPANEL_URL}/EditProblem/{problem_id}")
+    csrf_token = get_csrf_token(page.text)
+    session.post(
+        f"{CPANEL_URL}/EditProblem/{problem_id}",
+        data={
+            "PostAction": "DeleteProblem",
+            "__RequestVerificationToken": csrf_token,
+        },
+    )
+
+
 def check_testcase_upload(page):
     soup = BeautifulSoup(page.text, "html.parser")
     error = soup.find("div", attrs={"class": "validation-summary-errors"})
@@ -96,3 +108,60 @@ def upload_statement(session, problem_id, statement_path):
             allow_redirects=False,
         )
     # TODO: check for errors
+
+
+def _get_problem_settings_dict(
+    sess,
+    pid,
+    name=None,
+    time_limit_ms=1000,
+    memory_limit_mb=64,
+):
+    page = sess.get(f"{CPANEL_URL}/EditProblem/{pid}")
+    csrf_token = get_csrf_token(page.text)
+    if not name:
+        name = get_problem_name(sess, pid)
+    if not time_limit_ms:
+        time_limit_ms = 1000
+    if not memory_limit_mb:
+        memory_limit_mb = 64
+
+    return {
+        "Problem.Type": (None, "0"),
+        "Problem.Name": (None, name),
+        "Problem.TimeLimit": (None, str(time_limit_ms)),
+        "Problem.MemoryLimit": (None, str(memory_limit_mb)),
+        "Problem.Author": (None, ""),
+        "Problem.SolAuthor": (None, ""),
+        "Problem.Contributors": (None, ""),
+        "Problem.Origin": (None, ""),
+        "Problem.Tags": (None, ""),
+        "Problem.AdditionalMaterialTitle": (None, ""),
+        "Problem.AdditionalMaterialZip": (None, ""),
+        "PostAction": (None, "EditMetaInfo"),
+        "__RequestVerificationToken": (None, csrf_token),
+    }
+
+
+def set_time_limit(session, problem_id, time_limit_ms):
+    res = session.post(
+        f"{CPANEL_URL}/EditProblem/{problem_id}",
+        files=_get_problem_settings_dict(
+            session, problem_id, time_limit_ms=time_limit_ms
+        ),
+    )
+    if res.status_code != 200:
+        raise RuntimeError(f"Failed setting time limit: {res.status_code} {res.text} ")
+
+
+def set_memory_limit(session, problem_id, memory_limit_mb):
+    res = session.post(
+        f"{CPANEL_URL}/EditProblem/{problem_id}",
+        files=_get_problem_settings_dict(
+            session, problem_id, memory_limit_mb=memory_limit_mb
+        ),
+    )
+    if res.status_code != 200:
+        raise RuntimeError(
+            f"Failed setting memory limit: {res.status_code} {res.text} "
+        )

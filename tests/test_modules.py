@@ -3,8 +3,11 @@ import uuid
 
 import pytest
 import requests
-import petlja_api as petlja
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+
+import petlja_api as petlja
+from petlja_api.urls import CPANEL_URL
 
 load_dotenv()
 
@@ -19,7 +22,8 @@ def created_prob(sess):
     uid = uuid.uuid4().hex
     alias = f"testprob{uid}"
     pid = petlja.create_problem(sess, "Test zadatak", alias)
-    return pid, alias
+    yield pid, alias
+    petlja.delete_problem(sess, pid)
 
 
 @pytest.fixture
@@ -27,7 +31,8 @@ def empty_comp(sess):
     uid = uuid.uuid4().hex
     alias = f"testcomp{uid}"
     cid = petlja.create_competition(sess, "Test takmicenje", alias)
-    return cid, alias
+    yield cid, alias
+    petlja.delete_competition(sess, cid)
 
 
 @pytest.fixture
@@ -241,3 +246,46 @@ def test_submit_unallowed_lang(sess, comp_with_problems, created_prob, src_py):
     pid, _ = created_prob
     with pytest.raises(Exception):
         petlja.submit_solution(sess, cid, pid, src_py)
+
+
+def get_cpanel_problem_ids(sess):
+    page = sess.get(f"{CPANEL_URL}/Problems")
+    soup = BeautifulSoup(page.text, "html.parser")
+    problems_list = soup.select(".list-group-item")
+    # items are of format <li id=title-{id} class="list-group-item">
+    problem_ids = [p.get("id").removeprefix("title-") for p in problems_list]
+    return problem_ids
+
+
+def test_delete_problem(sess, created_prob):
+    pid, _ = created_prob
+    petlja.delete_problem(sess, pid)
+    # For some reason the problem isn't actually deleted
+    # just unlisted from the problems page
+    problem_ids = get_cpanel_problem_ids(sess)
+    assert pid not in problem_ids
+
+
+def test_delete_competition(sess, empty_comp):
+    cid, _ = empty_comp
+    petlja.delete_competition(sess, cid)
+    with pytest.raises(ValueError):
+        petlja.get_competition_id(sess, cid)
+
+
+def test_set_time_limit(sess, created_prob):
+    pid, _ = created_prob
+    petlja.set_time_limit(sess, pid, 42)
+    page = sess.get(f"{CPANEL_URL}/EditProblem/{pid}")
+    soup = BeautifulSoup(page.text, "html.parser")
+    time_limit = soup.select_one("#Problem_TimeLimit").get("value")
+    assert time_limit == "42"
+
+
+def test_set_memory_limit(sess, created_prob):
+    pid, _ = created_prob
+    petlja.set_memory_limit(sess, pid, 42)
+    page = sess.get(f"{CPANEL_URL}/EditProblem/{pid}")
+    soup = BeautifulSoup(page.text, "html.parser")
+    memory_limit = soup.select_one("#Problem_MemoryLimit").get("value")
+    assert memory_limit == "42"

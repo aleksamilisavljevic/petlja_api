@@ -2,12 +2,13 @@ import json
 import re
 from datetime import datetime
 
+import requests
 from bs4 import BeautifulSoup
 
 from .auth import get_csrf_token
 from .problem import get_problem_name
-from .urls import ARENA_URL, CPANEL_URL, PETLJA_URL
 from .submit import LANGUAGE_IDS
+from .urls import ARENA_URL, COMPETITIONS_URL, CPANEL_URL
 
 
 def get_competition_id(session, alias):
@@ -80,12 +81,18 @@ def create_competition(
         raise RuntimeError(f"Unknown error: {resp.status_code}")
 
 
+def delete_competition(session: requests.Session, competition_id):
+    res = session.post(f"{COMPETITIONS_URL}/delete/{competition_id}")
+    if res.status_code != 200:
+        raise ValueError(f"Error deleting competition: {res.text}")
+
+
 def add_problem(session, competition_id, problem_id):
     already_added = get_added_problem_ids(session, competition_id)
     if problem_id in already_added:
         return
 
-    url = f"{PETLJA_URL}/api/dashboard/competitions/problems/add"
+    url = f"{COMPETITIONS_URL}/problems/add"
     problem_name = get_problem_name(session, problem_id)
     session.post(
         url,
@@ -101,7 +108,7 @@ def add_problem(session, competition_id, problem_id):
 
 
 def upload_scoring(session, competition_id, problem_id, scoring_path):
-    url = f"{PETLJA_URL}/api/dashboard/competitions/problems/addGraderHints"
+    url = f"{COMPETITIONS_URL}/problems/addGraderHints"
     with open(scoring_path) as scoring_file:
         scoring = scoring_file.read()
     resp = session.post(
@@ -120,7 +127,7 @@ def upload_scoring(session, competition_id, problem_id, scoring_path):
 
 
 def add_language(session, competition_id, extension):
-    url = f"{PETLJA_URL}/api/dashboard/competitions/programmingLanguages/add"
+    url = f"{COMPETITIONS_URL}/programmingLanguages/add"
     session.post(
         url,
         json={"competitionId": competition_id, "languageId": LANGUAGE_IDS[extension]},
