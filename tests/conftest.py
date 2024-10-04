@@ -43,6 +43,16 @@ def comp_with_problems(sess, empty_comp, created_prob, scoring, testcases):
 
 
 @pytest.fixture
+def src_ce(tmp_path):
+    src = r"""
+    compile error
+    """
+    path = tmp_path / "trening_ce.cpp"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
 def src_ok(tmp_path):
     src = r"""
     #include <iostream>
@@ -93,13 +103,84 @@ def src_tle(tmp_path):
 
 
 @pytest.fixture
+def src_rte(tmp_path):
+    src = r"""
+    #include <iostream>
+    using namespace std;
+
+    int main()
+    {
+        int a, b; cin >> a >> b;
+        cout << 1 / 0;
+    }
+    """
+    path = tmp_path / "trening_rte.cpp"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
 def src_py(tmp_path):
     src = r"""
-    a = int(input())
-    b = int(input())
-    print(2 * (a + b))
+a = int(input())
+b = int(input())
+print(2 * (a + b))
     """
     path = tmp_path / "trening.py"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
+def src_ok_wa(tmp_path):
+    src = r"""
+    #include <iostream>
+    using namespace std;
+
+    int main()
+    {
+        int a, b; cin >> a >> b;
+        if (a % 2 == 0) cout << -1;
+        cout << 2 * (a + b) << endl;
+        return 0;
+    }
+    """
+    path = tmp_path / "trening_ok_wa.cpp"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
+def src_100ms_runtime(tmp_path):
+    src = r"""
+a = 0
+for i in range(1000000):
+    a += 1
+    """
+    path = tmp_path / "trening_100ms_runtime.py"
+    path.write_text(src)
+    return path
+
+
+@pytest.fixture
+def src_10mb_memory(tmp_path):
+    src = r"""
+    #include <stdio.h>
+    #include <stdlib.h>
+    #define N 9 * 1000 * 1000
+    int main()
+    {
+        unsigned char a[N];
+        for (int i = 0; i < N; i++) {
+            a[i] = rand();
+        }
+        int s = 0;
+        for (int i = 0; i < N; i++)
+            s += a[i];
+        printf("%d", s);
+    }
+    """
+    path = tmp_path / "trening_10mb_memory.cpp"
     path.write_text(src)
     return path
 
