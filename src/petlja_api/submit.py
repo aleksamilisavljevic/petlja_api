@@ -2,6 +2,7 @@ from .urls import ARENA_URL
 import time
 import re
 import math
+from typing import List, Union
 
 from dataclasses import dataclass
 
@@ -44,8 +45,8 @@ class TestcaseResult:
     """
 
     status: str
-    time_ms: int | float | None
-    memory_mb: int | float | None
+    time_ms: Union[int, float, None]
+    memory_mb: Union[int, float, None]
 
 
 @dataclass
@@ -64,9 +65,9 @@ class SubmissionResult:
         testcase_results (list[TestcaseResult]): The results of each test case.
     """
 
-    score: int | None
+    score: Union[int, None]
     compile_error: bool
-    testcase_results: list[TestcaseResult]
+    testcase_results: List[TestcaseResult]
 
 
 def _parse_time(time_str):

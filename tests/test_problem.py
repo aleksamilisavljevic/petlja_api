@@ -32,7 +32,12 @@ def _get_cpanel_problem_ids(sess):
     soup = BeautifulSoup(page.text, "html.parser")
     problems_list = soup.select(".list-group-item")
     # items are of format <li id=title-{id} class="list-group-item">
-    problem_ids = [p.get("id").removeprefix("title-") for p in problems_list]
+    problem_ids = []
+    for p in problems_list:
+        id_attr_str = p.get("id")
+        assert id_attr_str is not None
+        id = id_attr_str[len("title-") :]
+        problem_ids.append(id)
     return problem_ids
 
 

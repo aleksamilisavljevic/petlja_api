@@ -116,7 +116,8 @@ def test_submit_detailed_time(sess, comp_with_problems, src_100ms_runtime):
 
     times = [t.time_ms for t in res.testcase_results]
     expected_times = [100] * 11
-    for time, expected_time in zip(times, expected_times, strict=True):
+    assert len(times) == len(expected_times)
+    for time, expected_time in zip(times, expected_times):
         assert time == pytest.approx(expected_time, abs=50)
 
 
@@ -127,5 +128,6 @@ def test_submit_detailed_memory(sess, comp_with_problems, src_10mb_memory):
 
     mems = [t.memory_mb for t in res.testcase_results]
     expected_mems = [10] * 11
-    for mem, expected_mem in zip(mems, expected_mems, strict=True):
+    assert len(mems) == len(expected_mems)
+    for mem, expected_mem in zip(mems, expected_mems):
         assert mem == pytest.approx(expected_mem, abs=2)
