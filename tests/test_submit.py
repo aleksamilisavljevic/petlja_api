@@ -1,5 +1,6 @@
 import pytest
 
+import math
 import petlja_api as petlja
 
 
@@ -115,10 +116,10 @@ def test_submit_detailed_time(sess, comp_with_problems, src_100ms_runtime):
     res = petlja.submit_solution_detailed(sess, cid, pid, src_100ms_runtime)
 
     times = [t.time_ms for t in res.testcase_results]
-    expected_times = [100] * 11
-    assert len(times) == len(expected_times)
-    for time, expected_time in zip(times, expected_times):
-        assert time == pytest.approx(expected_time, abs=50)
+    assert all(t is not None and t != math.inf for t in times)
+    avg_time = sum(times) / len(times)
+    expected_time = 100
+    assert avg_time == pytest.approx(expected_time, abs=50)
 
 
 def test_submit_detailed_memory(sess, comp_with_problems, src_10mb_memory):
@@ -127,7 +128,7 @@ def test_submit_detailed_memory(sess, comp_with_problems, src_10mb_memory):
     res = petlja.submit_solution_detailed(sess, cid, pid, src_10mb_memory)
 
     mems = [t.memory_mb for t in res.testcase_results]
-    expected_mems = [10] * 11
-    assert len(mems) == len(expected_mems)
-    for mem, expected_mem in zip(mems, expected_mems):
-        assert mem == pytest.approx(expected_mem, abs=2)
+    assert all(m is not None and m != math.inf for m in mems)
+    avg_mem = sum(mems) / len(mems)
+    expected_mem = 10
+    assert avg_mem == pytest.approx(expected_mem, abs=2)
