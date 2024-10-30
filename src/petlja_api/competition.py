@@ -15,6 +15,8 @@ def get_competition_id(session, alias):
     page = session.get(f"{ARENA_URL}/competition/{alias}")
     if page.status_code == 404 or "error" in page.url:
         raise ValueError(f"Competition with alias {alias} does not exist")
+    if "AccessDenied" in page.url:
+        raise PermissionError("User does not have permission to view competition")
 
     soup = BeautifulSoup(page.text, "html.parser")
     competition_id = soup.find("button", attrs={"id": "ciRun"})["data-competition-id"]

@@ -51,3 +51,8 @@ def test_set_memory_limit(sess, created_prob):
     soup = BeautifulSoup(page.text, "html.parser")
     memory_limit = soup.select_one("#Problem_MemoryLimit").get("value")
     assert memory_limit == "42"
+
+
+def test_competition_access_denied(sess):
+    with pytest.raises(PermissionError):
+        petlja.get_competition_id(sess, "os-kv1-202425-6")
