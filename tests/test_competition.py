@@ -56,3 +56,17 @@ def test_set_memory_limit(sess, created_prob):
 def test_competition_access_denied(sess):
     with pytest.raises(PermissionError):
         petlja.get_competition_id(sess, "os-kv1-202425-6")
+
+
+def test_remove_problem(sess, comp_with_problems):
+    cid, _ = comp_with_problems
+    pid = petlja.get_added_problem_ids(sess, cid)[0]
+    petlja.remove_problem(sess, cid, pid)
+    new_pids = petlja.get_added_problem_ids(sess, cid)
+    assert pid not in new_pids
+
+
+def test_remove_nonexistent_problem(sess, comp_with_problems):
+    cid, _ = comp_with_problems
+    with pytest.raises(ValueError):
+        petlja.remove_problem(sess, cid, "123456789")

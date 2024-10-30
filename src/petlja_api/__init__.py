@@ -2,6 +2,7 @@ from .auth import login
 from .competition import (
     add_language,
     add_problem,
+    remove_problem,
     create_competition,
     delete_competition,
     get_added_problem_ids,
@@ -27,6 +28,7 @@ __all__ = [
     "login",
     "add_language",
     "add_problem",
+    "remove_problem",
     "create_competition",
     "delete_competition",
     "get_added_problem_ids",
