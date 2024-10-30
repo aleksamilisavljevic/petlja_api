@@ -3,6 +3,7 @@
 A python library for interacting with the [petlja.org](https://petlja.org/) API.
 
 ## Installation
+
 ```
 pip install petlja-api
 ```
@@ -24,5 +25,5 @@ comp_id = petlja.create_competition(session, name="My Competition", alias="my-co
 petlja.add_problem(session, comp_id, prob_id)
 
 # Upload solution
-petlja.score = submit(session, prob_id, "my-prob/sol.cpp", comp_id)
+score = petlja.submit(session, prob_id, "my-prob/sol.cpp", comp_id)
 ```
