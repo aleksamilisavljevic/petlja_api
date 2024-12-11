@@ -110,7 +110,7 @@ def upload_statement(session, problem_id, statement_path):
     # TODO: check for errors
 
 
-def _get_problem_settings_dict(
+def get_problem_metadata_dict(
     sess,
     pid,
     name=None,
@@ -143,25 +143,19 @@ def _get_problem_settings_dict(
     }
 
 
-def set_time_limit(session, problem_id, time_limit_ms):
-    res = session.post(
-        f"{CPANEL_URL}/EditProblem/{problem_id}",
-        files=_get_problem_settings_dict(
-            session, problem_id, time_limit_ms=time_limit_ms
-        ),
-    )
-    if res.status_code != 200:
-        raise RuntimeError(f"Failed setting time limit: {res.status_code} {res.text} ")
+def set_time_limit(metadata, time_limit_ms):
+    metadata["Problem.TimeLimit"] = (None, str(time_limit_ms))
 
 
-def set_memory_limit(session, problem_id, memory_limit_mb):
+def set_memory_limit(metadata, memory_limit_mb):
+    metadata["Problem.MemoryLimit"] = (None, str(memory_limit_mb))
+    
+def set_metadata(session, problem_id, metadata):
     res = session.post(
         f"{CPANEL_URL}/EditProblem/{problem_id}",
-        files=_get_problem_settings_dict(
-            session, problem_id, memory_limit_mb=memory_limit_mb
-        ),
+        files=metadata
     )
     if res.status_code != 200:
         raise RuntimeError(
-            f"Failed setting memory limit: {res.status_code} {res.text} "
+            f"Failed setting metadata: {res.status_code} {res.text} "
         )
